@@ -22,7 +22,7 @@
 
 template <typename T> 
 class btree {
- public:
+public:
   /** Hmm, need some iterator typedefs here... friends? **/
  
   /**
@@ -171,7 +171,24 @@ class btree {
   ~btree();
   
 private:
-  // The details of your implementation go here
+    // The details of your implementation go here
+    class Node {
+    friend class btree;
+    public:
+        Node();
+        ~Node();
+        isEmpty();
+   
+    private:
+        std::vector<T> elems_;
+        std::shared_ptr<Node> parent_;
+        std::shared_ptr<Node> leftChild_;
+        std::shared_ptr<Node> rightChild_;
+    };
+    
+    size_t maxNumElems_;
+    std::shared_ptr<Node> root_;
 };
 
+#include "btree.tem"
 #endif

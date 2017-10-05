@@ -1,0 +1,57 @@
+// Node
+template <typename T>
+btree<T>::Node::Node()
+    : elems_{std::vector<T>()}{
+}
+
+template <typename T>
+btree<T>::Node::empty() {
+    return elems_.isEmpty();
+}
+
+template <typename T>
+btree<T>::Node::full() {
+    return elems_.size() >= maxNumElems_;
+}
+
+// btree
+template <typename T>
+btree(size_t maxNumElems)
+    : maxNumElems_{maxNumElems}
+    , root_{std::make_shared<Node>(Node())}{
+}
+
+std::ostream& operator<< <T> (std::ostream& os, const btree<T>& tree) {
+
+    auto nodesToPrint = std::queue<std::shared_ptr<Node>>();
+    
+    nodesToPrint.push(tree.root_);
+    
+    while(!nodesToPrint.empty()) {
+        Node node = nodesToPrint.pop();
+        std::shared_ptr<Node> leftChildPtr = node.leftChild_;
+        std::shared_ptr<Node> rightChildPtr = node.rightChild_;
+        
+        if(!leftChildPtr.get()->empty()) {
+            nodesToPrint.push(leftChildPtr);
+        }
+        if(!rightChildPtr.get()->empty()) {
+            nodesToPrint.push(rightChildPtr);
+        }
+    }
+    
+    if (obj.size_ == 0) {
+        return os << "[]";
+    }
+    
+    unsigned int i = 0;
+    os << "[";
+    while (i < obj.size_ - 1)
+    {
+        os << obj.ev_[i] << " ";
+        i++;
+    }
+    os << obj.ev_[i] << "]";
+    return os;
+}
+
