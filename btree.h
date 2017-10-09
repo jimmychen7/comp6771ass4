@@ -13,18 +13,26 @@
 #include <iostream>
 #include <cstddef>
 #include <utility>
+#include <memory>
+#include <vector>
+#include <queue>
 
 // we better include the iterator
 #include "btree_iterator.h"
 
 // we do this to avoid compiler errors about non-template friends
 // what do we do, remember? :)
+template <typename> class btree;
 
+template <typename T>
+std::ostream& operator<< (std::ostream& os, const btree<T>& tree);
+  
 template <typename T> 
 class btree {
 public:
   /** Hmm, need some iterator typedefs here... friends? **/
- 
+  typedef btree_iterator iterator;
+  typedef const_btree_iterator const_iterator;
   /**
    * Constructs an empty btree.  Note that
    * the elements stored in your btree must
@@ -93,7 +101,6 @@ public:
    * @return a reference to os
    */
   friend std::ostream& operator<< <T> (std::ostream& os, const btree<T>& tree);
-
   /**
    * The following can go here
    * -- begin() 
@@ -172,18 +179,34 @@ public:
   
 private:
     // The details of your implementation go here
+    class Node;
     class Node {
-    friend class btree;
+        class Element {
+        public:
+            Element();
+            Element(T value);
+            ~Element();
+            T getValue();
+            std::shared_ptr<Node> getLeftChild();
+            std::shared_ptr<Node> getRightChild();
+            void setLeftChild(std::shared_ptr<Node> sharedPtr);
+            void setRightChild(std::shared_ptr<Node> sharedPtr);
+        private:
+            T value_;
+            std::shared_ptr<Node> leftChild_;
+            std::shared_ptr<Node> rightChild_;
+        };
+        friend class btree;
     public:
         Node();
         ~Node();
-        isEmpty();
+        bool isEmpty();
+        bool isFull();
+        std::vector<Element> getElements();
    
     private:
-        std::vector<T> elems_;
+        std::vector<Element> elems_;
         std::shared_ptr<Node> parent_;
-        std::shared_ptr<Node> leftChild_;
-        std::shared_ptr<Node> rightChild_;
     };
     
     size_t maxNumElems_;

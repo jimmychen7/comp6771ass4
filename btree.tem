@@ -1,45 +1,123 @@
-// Node
+// Element
 template <typename T>
-btree<T>::Node::Node()
-    : elems_{std::vector<T>()}{
+btree<T>::Node::Element::Element()
+    : leftChild_{std::make_shared<Node>()}
+    , rightChild_{std::make_shared<Node>()} {
 }
 
 template <typename T>
-btree<T>::Node::empty() {
+btree<T>::Node::Element::Element(T value)
+    : Element() {
+    value_ = value;
+}
+
+template <typename T>
+T btree<T>::Node::Element::getValue() {
+    return value_;
+}
+
+template <typename T>
+std::shared_ptr<typename btree<T>::Node>
+        btree<T>::Node::Element::getLeftChild() {
+    return leftChild_;
+}
+
+template <typename T>
+std::shared_ptr<typename btree<T>::Node>
+        btree<T>::Node::Element::getRightChild() {
+    return rightChild_;
+}
+            
+template <typename T>
+void btree<T>::Node::Element::setLeftChild(std::shared_ptr<Node> sharedPtr) {
+    leftChild_ = sharedPtr;
+}
+
+template <typename T>
+void btree<T>::Node::Element::setRightChild(std::shared_ptr<Node> sharedPtr) {
+    rightChild_ = sharedPtr;
+}
+
+// Node
+template <typename T>
+btree<T>::Node::Node()
+    : elems_{std::vector<Element>()} {
+}
+
+template <typename T>
+bool btree<T>::Node::isEmpty() {
     return elems_.isEmpty();
 }
 
 template <typename T>
-btree<T>::Node::full() {
+bool btree<T>::Node::isFull() {
     return elems_.size() >= maxNumElems_;
+}
+
+template <typename T>
+std::vector<typename btree<T>::Node::Element>
+        btree<T>::Node::getElements() {
+    return elems_;
 }
 
 // btree
 template <typename T>
-btree(size_t maxNumElems)
+btree<T>::btree(size_t maxNumElems)
     : maxNumElems_{maxNumElems}
-    , root_{std::make_shared<Node>(Node())}{
+    , root_{std::make_shared<Node>(Node())} {
 }
 
-std::ostream& operator<< <T> (std::ostream& os, const btree<T>& tree) {
-
+template <typename T>
+std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
+    typedef typename btree<T>::Node Node;
+    typedef typename btree<T>::Node::Element Element;
     auto nodesToPrint = std::queue<std::shared_ptr<Node>>();
     
     nodesToPrint.push(tree.root_);
     
     while(!nodesToPrint.empty()) {
         Node node = nodesToPrint.pop();
-        std::shared_ptr<Node> leftChildPtr = node.leftChild_;
-        std::shared_ptr<Node> rightChildPtr = node.rightChild_;
         
-        if(!leftChildPtr.get()->empty()) {
-            nodesToPrint.push(leftChildPtr);
+        std::vector<Element> elements = node.getElements();
+        
+        for (int i = 0; i < elements.size(); i++) {
+            Element currElement = elements.at(i);
+            if (i == 0 && nodesToPrint.empty()) {
+                // first element of root node
+                os << currElement.getValue();
+            } else {
+                os << " " << currElement.getValue();
+            }
         }
-        if(!rightChildPtr.get()->empty()) {
-            nodesToPrint.push(rightChildPtr);
+        
+        if(node.isFull()) {
+            std::shared_ptr<Node> leftChildPtr, rightChildPtr;
+            Element firstElement, currElement;
+            
+            firstElement = elements.at(0);
+            leftChildPtr = firstElement.getLeftChild();
+            rightChildPtr = firstElement.getRightChild();
+            if(!leftChildPtr.get() != nullptr) {
+                nodesToPrint.push(leftChildPtr);
+            }
+            if(rightChildPtr.get() != nullptr) {
+                nodesToPrint.push(rightChildPtr);
+            }
+            for (int i = 1; i < elements.size(); i++) {
+                currElement = elements.at(i);
+                rightChildPtr = currElement.getRightChild();
+                if(rightChildPtr.get() != nullptr) {
+                    nodesToPrint.push(rightChildPtr);
+                }
+            }
         }
+        
     }
+        os << std::endl;
+        return os;
+}
     
+    /*
     if (obj.size_ == 0) {
         return os << "[]";
     }
@@ -52,6 +130,5 @@ std::ostream& operator<< <T> (std::ostream& os, const btree<T>& tree) {
         i++;
     }
     os << obj.ev_[i] << "]";
-    return os;
-}
+    return os;*/
 
