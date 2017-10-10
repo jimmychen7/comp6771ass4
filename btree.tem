@@ -27,6 +27,22 @@ std::shared_ptr<typename btree<T>::Node>
         btree<T>::Node::Element::getRightChild() {
     return rightChild_;
 }
+template <typename T>
+std::shared_ptr<typename btree<T>::Node::Element>
+btree<T>::Node::Element::getNext() {
+    return next_;
+}
+
+template <typename T>
+std::shared_ptr<typename btree<T>::Node::Element>
+btree<T>::Node::Element::getPrev() {
+    return prev_;
+}
+
+template <typename T>
+void btree<T>::Node::Element::setValue(T value) {
+    value_ = value;
+}
             
 template <typename T>
 void btree<T>::Node::Element::setLeftChild(std::shared_ptr<Node> sharedPtr) {
@@ -37,16 +53,25 @@ template <typename T>
 void btree<T>::Node::Element::setRightChild(std::shared_ptr<Node> sharedPtr) {
     rightChild_ = sharedPtr;
 }
+template <typename T>
+void btree<T>::Node::Element::setNext(std::shared_ptr<Element> elem) {
+    next_ = elem;
+}
+
+template <typename T>
+void btree<T>::Node::Element::setPrev(std::shared_ptr<Element> elem) {
+    prev_ = elem;
+}
 
 // Node
 template <typename T>
 btree<T>::Node::Node()
-    : elems_{std::vector<Element>()} {
+    : elems_{std::vector<std::shared_ptr<Element>>()} {
 }
 
 template <typename T>
 bool btree<T>::Node::isEmpty() {
-    return elems_.isEmpty();
+    return elems_.empty();
 }
 
 template <typename T>
@@ -55,8 +80,8 @@ bool btree<T>::Node::isFull() {
 }
 
 template <typename T>
-std::vector<typename btree<T>::Node::Element>
-        btree<T>::Node::getElements() {
+std::vector<std::shared_ptr<typename btree<T>::Node::Element>>
+btree<T>::Node::getElements() {
     return elems_;
 }
 

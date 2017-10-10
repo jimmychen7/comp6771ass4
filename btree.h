@@ -31,8 +31,12 @@ template <typename T>
 class btree {
 public:
   /** Hmm, need some iterator typedefs here... friends? **/
-  typedef btree_iterator iterator;
-  typedef const_btree_iterator const_iterator;
+  
+  friend class btree_iterator<T>;
+  friend class const_btree_iterator<T>;
+  
+  typedef btree_iterator<T> iterator;
+  typedef const_btree_iterator<T> const_iterator;
   /**
    * Constructs an empty btree.  Note that
    * the elements stored in your btree must
@@ -112,6 +116,21 @@ public:
    * -- crbegin() 
    * -- crend() 
    */
+  iterator begin() {
+    if(root_.get()->isEmpty()) {
+      return end();
+    }
+    std::shared_ptr<typename btree<T>::Node::Element>
+                                        head = root_.get()->getElments().at(0);
+    return iterator(head);
+  }
+   
+  iterator end() {
+    auto end = std::make_shared<typename btree<T>::Node::Element>();
+    auto elements = lastNode_.get()->getElements();
+    end.get()->setPrev(elements.back());
+    return iterator(end.get());
+  }
   
   /**
     * Returns an iterator to the matching element, or whatever 
@@ -189,28 +208,38 @@ private:
             T getValue();
             std::shared_ptr<Node> getLeftChild();
             std::shared_ptr<Node> getRightChild();
+            std::shared_ptr<Element> getNext();
+            std::shared_ptr<Element> getPrev();
+            void setValue(T value);
             void setLeftChild(std::shared_ptr<Node> sharedPtr);
             void setRightChild(std::shared_ptr<Node> sharedPtr);
+            void setNext(std::shared_ptr<Element> elem);
+            void setPrev(std::shared_ptr<Element> elem);
         private:
             T value_;
             std::shared_ptr<Node> leftChild_;
             std::shared_ptr<Node> rightChild_;
+            std::shared_ptr<Element> next_;
+            std::shared_ptr<Element> prev_;
         };
         friend class btree;
+        friend class btree_iterator<T>;
+        friend class const_btree_iterator<T>;
     public:
         Node();
         ~Node();
         bool isEmpty();
         bool isFull();
-        std::vector<Element> getElements();
+        std::vector<std::shared_ptr<Element>> getElements();
    
     private:
-        std::vector<Element> elems_;
+        std::vector<std::shared_ptr<Element>> elems_;
         std::shared_ptr<Node> parent_;
     };
     
     size_t maxNumElems_;
     std::shared_ptr<Node> root_;
+    std::shared_ptr<Node> lastNode_;
 };
 
 #include "btree.tem"
