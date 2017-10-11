@@ -6,6 +6,10 @@ btree<T>::Node::Element::Element()
 }
 
 template <typename T>
+btree<T>::Node::Element::~Element() {
+}
+
+template <typename T>
 btree<T>::Node::Element::Element(T value)
     : Element() {
     value_ = value;
@@ -70,6 +74,10 @@ btree<T>::Node::Node()
 }
 
 template <typename T>
+btree<T>::Node::~Node() {
+}
+
+template <typename T>
 bool btree<T>::Node::isEmpty() {
     return elems_.empty();
 }
@@ -90,6 +98,27 @@ template <typename T>
 btree<T>::btree(size_t maxNumElems)
     : maxNumElems_{maxNumElems}
     , root_{std::make_shared<Node>(Node())} {
+}
+
+template <typename T>
+btree<T>::btree(const btree<T>& original) {
+    //TODO
+}
+
+template <typename T>
+const_btree_iterator<T> btree<T>::find(const T& elem) const {
+    //TODO
+    return const_btree_iterator<T>();
+}
+
+template <typename T>
+std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
+    //TODO
+    return std::pair<btree_iterator<T>, bool>();
+}
+
+template <typename T>
+btree<T>::~btree() {
 }
 
 template <typename T>

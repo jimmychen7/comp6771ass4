@@ -116,7 +116,7 @@ public:
    * -- crbegin() 
    * -- crend() 
    */
-  iterator begin() {
+  iterator begin() const {
     if(root_.get()->isEmpty()) {
       return end();
     }
@@ -125,7 +125,7 @@ public:
     return iterator(head);
   }
    
-  iterator end() {
+  iterator end() const {
     auto end = std::make_shared<typename btree<T>::Node::Element>();
     auto elements = lastNode_.get()->getElements();
     end.get()->setPrev(elements.back());

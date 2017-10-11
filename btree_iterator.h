@@ -13,13 +13,16 @@
 
 template <typename T> class btree;
 
+template <typename T> class const_btree_iterator;
+
 // btree_iterator interface
 template <typename T>
 class btree_iterator {
+    friend class const_btree_iterator<T>;
 public:
-    typedef std::ptrdiff_t                     difference_type;
     typedef std::forward_iterator_tag          iterator_category;
     typedef T                                  value_type;
+    typedef std::ptrdiff_t                     difference_type;
     typedef T*                                 pointer;
     typedef T&                                 reference;
     
@@ -27,8 +30,10 @@ public:
     pointer operator->() const;
     btree_iterator& operator++();
     bool operator==(const btree_iterator& other) const;
+    bool operator==(const const_btree_iterator<T>& other) const;
     bool operator!=(const btree_iterator& other) const;
-
+    bool operator!=(const const_btree_iterator<T>& other) const;
+    
     btree_iterator(typename btree<T>::Node::Element *pointee = nullptr);
 private:
     typename btree<T>::Node::Element *pointee_;
@@ -37,8 +42,22 @@ private:
 // const_btree_iterator interface
 template <typename T>
 class const_btree_iterator {
+    friend class btree_iterator<T>;
 public:
+    typedef std::forward_iterator_tag          iterator_category;
+    typedef T                                  value_type;
+    typedef std::ptrdiff_t                     difference_type;
+    typedef T*                                 pointer;
+    typedef T&                                 reference;
+          
+    bool operator==(const const_btree_iterator& other) const;
+    bool operator==(const btree_iterator<T>& other) const;
+    bool operator!=(const const_btree_iterator& other) const;
+    bool operator!=(const btree_iterator<T>& other) const;
+    
+    const_btree_iterator(typename btree<T>::Node::Element *pointee = nullptr);
 private:
+    typename btree<T>::Node::Element *pointee_;
 };
 
 // btree_iterator
@@ -66,7 +85,12 @@ btree_iterator<T>::operator++() {
 }
 
 template <typename T>
-bool btree_iterator<T>::operator==(const btree_iterator<T>& other) const {
+bool btree_iterator<T>::operator==(const btree_iterator& other) const {
+    return this->pointee_ == other.pointee_;
+}
+
+template <typename T>
+bool btree_iterator<T>::operator==(const const_btree_iterator<T>& other) const {
     return this->pointee_ == other.pointee_;
 }
 
@@ -75,7 +99,35 @@ bool btree_iterator<T>::operator!=(const btree_iterator& other) const {
     return !operator==(other);
 }
 
-//const_btree_iterator
+template <typename T>
+bool btree_iterator<T>::operator!=(const const_btree_iterator<T>& other) const {
+    return !operator==(other);
+}
 
+//const_btree_iterator
+template <typename T>
+const_btree_iterator<T>::const_btree_iterator(typename btree<T>::Node::Element *pointee)
+    : pointee_{pointee} {
+}
+
+template <typename T>
+bool const_btree_iterator<T>::operator==(const const_btree_iterator& other) const {
+    return this->pointee_ == other.pointee_;
+}
+
+template <typename T>
+bool const_btree_iterator<T>::operator==(const btree_iterator<T>& other) const {
+    return this->pointee_ == other.pointee_;
+}
+
+template <typename T>
+bool const_btree_iterator<T>::operator!=(const const_btree_iterator& other) const {
+    return !operator==(other);
+}
+
+template <typename T>
+bool const_btree_iterator<T>::operator!=(const btree_iterator<T>& other) const {
+    return !operator==(other);
+}
 
 #endif
