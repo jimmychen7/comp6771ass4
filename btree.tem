@@ -1,8 +1,8 @@
 // Element
 template <typename T>
 btree<T>::Node::Element::Element()
-    : leftChild_{std::make_shared<Node>()}
-    , rightChild_{std::make_shared<Node>()} {
+    : leftChild_{std::make_shared<Node>(nullptr)}
+    , rightChild_{std::make_shared<Node>(nullptr)} {
 }
 
 template <typename T>
@@ -106,15 +106,131 @@ btree<T>::btree(const btree<T>& original) {
 }
 
 template <typename T>
+btree_iterator<T> btree<T>::find(const T& elem) {
+    //TODO
+    auto nodesToSearch = std::queue<std::shared_ptr<Node>>();
+    nodesToSearch.push(root_);
+    
+    while(!nodesToSearch.empty()) {
+        Node *node = nodesToSearch.pop().get();
+        std::vector<std::shared_ptr<Element>> elems = node->getElements();
+        
+        for(int i = 0; i < elems.size(); ++i) {
+            Element *currElem = elems.at(i).get();
+            
+            if(elemPtr->getValue() == elem) {
+                return btree_iterator(currElem);
+            } else if(elemPtr->getValue() > elem) {
+                std::shared_ptr<Node> nodeToSearch = elemPtr->getLeftChild();
+                if(nodeToSearch.get() != nullptr) {
+                    nodesToSearch.push(nodetoSearch);
+                }
+                break;
+            } else if(i == elems.size() - 1) {
+                //last elem in the node
+                std::shared_ptr<Node> nodeToSearch = elemPtr->getRightChild();
+                if(nodeToSearch.get() != nullptr) {
+                    nodesToSearch.push(nodetoSearch);
+                }
+            }
+        }
+    }
+    return end();
+}
+
+
+template <typename T>
 const_btree_iterator<T> btree<T>::find(const T& elem) const {
     //TODO
-    return const_btree_iterator<T>();
+    auto nodesToSearch = std::queue<std::shared_ptr<Node>>();
+    nodesToSearch.push(root_);
+    
+    while(!nodesToSearch.empty()) {
+        Node *node = nodesToSearch.pop().get();
+        std::vector<std::shared_ptr<Element>> elems = node->getElements();
+        
+        for(int i = 0; i < elems.size(); ++i) {
+            Element *currElem = elems.at(i).get();
+            
+            if(elemPtr->getValue() == elem) {
+                return btree_iterator(currElem);
+            } else if(elemPtr->getValue() > elem) {
+                std::shared_ptr<Node> nodeToSearch = elemPtr->getLeftChild();
+                if(nodeToSearch.get() != nullptr) {
+                    nodesToSearch.push(nodetoSearch);
+                }
+                break;
+            } else if(i == elems.size() - 1) {
+                //last elem in the node
+                std::shared_ptr<Node> nodeToSearch = elemPtr->getRightChild();
+                if(nodeToSearch.get() != nullptr) {
+                    nodesToSearch.push(nodetoSearch);
+                }
+            }
+        }
+    }
+    return cend();
 }
 
 template <typename T>
 std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
     //TODO
-    return std::pair<btree_iterator<T>, bool>();
+    auto it = find(elem);
+    if(it != end()) {
+        return std::pair<btree_iterator<T>, bool>(it, false);
+    }
+    
+    auto nodesToSearch = std::queue<std::shared_ptr<Node>>();
+    nodesToSearch.push(root_);
+    
+    bool done = false;
+    
+    while(!nodesToSearch.empty() && !done) {
+        Node node = *nodesToSearch.pop().get();
+        auto elems = node.getElements();
+        
+        for(int i = 0; i < elems.size(); ++i) {
+            elemePtr = elems.at(i).get();
+            if(elemPtr->getValue() == elem) {
+                return std::pair<btree_iterator<T>, bool> (
+                                            btree_iterator(elemPtr), false);
+            } else if (elemPtr->getValue() > elem) {
+                // passed
+                preElemPtr = elemPtr->getPrev();
+                
+                done = true;
+            }
+        }
+        
+        if(node.isFull()) {
+            // add child nodes to the search
+            std::shared_ptr<Node> leftChildPtr, rightChildPtr;
+            Element firstElement, currElement;
+            
+            firstElement = elements.at(0);
+            leftChildPtr = firstElement.getLeftChild();
+            rightChildPtr = firstElement.getRightChild();
+            if(leftChildPtr.get() != nullptr) {
+                nodesToPrint.push(leftChildPtr);
+            }
+            if(rightChildPtr.get() != nullptr) {
+                nodesToPrint.push(rightChildPtr);
+            }
+            for (int i = 1; i < elements.size(); i++) {
+                currElement = elements.at(i);
+                rightChildPtr = currElement.getRightChild();
+                if(rightChildPtr.get() != nullptr) {
+                    nodesToPrint.push(rightChildPtr);
+                }
+            }
+        }
+    }
+    
+    if (!done) {
+        
+    }
+    
+    return std::pair<btree_iterator<T>, bool>(newElem ,true);
 }
 
 template <typename T>
@@ -130,7 +246,7 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
     nodesToPrint.push(tree.root_);
     
     while(!nodesToPrint.empty()) {
-        Node node = nodesToPrint.pop();
+        Node node = *nodesToPrint.pop().get();
         
         std::vector<Element> elements = node.getElements();
         
@@ -151,7 +267,7 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
             firstElement = elements.at(0);
             leftChildPtr = firstElement.getLeftChild();
             rightChildPtr = firstElement.getRightChild();
-            if(!leftChildPtr.get() != nullptr) {
+            if(leftChildPtr.get() != nullptr) {
                 nodesToPrint.push(leftChildPtr);
             }
             if(rightChildPtr.get() != nullptr) {
@@ -167,8 +283,8 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
         }
         
     }
-        os << std::endl;
-        return os;
+    os << std::endl;
+    return os;
 }
     
     /*
