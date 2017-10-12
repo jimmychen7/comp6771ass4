@@ -127,9 +127,14 @@ public:
    
   iterator end() const {
     auto end = std::make_shared<typename btree<T>::Node::Element>();
-    auto elements = lastNode_.get()->getElements();
-    end.get()->setPrev(elements.back());
+    end.get()->setParent(lastNode_);
     return iterator(end.get());
+  }
+  
+  const_iterator cend() const {
+    auto end = std::make_shared<typename btree<T>::Node::Element>();
+    end.get()->setParent(lastNode_);
+    return const_iterator(end.get());
   }
   
   /**
@@ -208,38 +213,37 @@ private:
             T getValue();
             std::shared_ptr<Node> getLeftChild();
             std::shared_ptr<Node> getRightChild();
-            std::shared_ptr<Element> getNext();
-            std::shared_ptr<Element> getPrev();
+            std::shared_ptr<Node> getParent();
             void setValue(T value);
             void setLeftChild(std::shared_ptr<Node> sharedPtr);
             void setRightChild(std::shared_ptr<Node> sharedPtr);
-            void setNext(std::shared_ptr<Element> elem);
-            void setPrev(std::shared_ptr<Element> elem);
+            void setParent(std::shared_ptr<Node> sharedPtr);
         private:
             T value_;
             std::shared_ptr<Node> leftChild_;
             std::shared_ptr<Node> rightChild_;
-            std::shared_ptr<Element> next_;
-            std::shared_ptr<Element> prev_;
+            std::shared_ptr<Node> parent_;
+            
         };
+        // TODO can i get rid of the friend btree?
         friend class btree;
         friend class btree_iterator<T>;
         friend class const_btree_iterator<T>;
     public:
         Node();
+        Node(std::nullptr_t);
         ~Node();
         bool isEmpty();
-        bool isFull();
         std::vector<std::shared_ptr<Element>> getElements();
-   
+        std::shared_ptr<Element> addElement(const T& elem);
+        
     private:
         std::vector<std::shared_ptr<Element>> elems_;
-        std::shared_ptr<Node> parent_;
+        
     };
-    
-    size_t maxNumElems_;
     std::shared_ptr<Node> root_;
     std::shared_ptr<Node> lastNode_;
+    size_t maxNodeElems_;
 };
 
 #include "btree.tem"

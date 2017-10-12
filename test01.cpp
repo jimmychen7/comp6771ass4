@@ -115,17 +115,19 @@ bool confirmEverythingMatches(const btree<long>& testContainer, const set<long>&
  * you should uncomment it as appropriate.
  **/
 int main(void) {
+
   // initialise random number generator with 'random' seed
   initRandom();
 
   // insert lots of random numbers and compare with a known correct container
   btree<long> testContainer(99);
   set<long> stableContainer;
-    
-  insertRandomNumbers(testContainer, stableContainer, 1000000);
+  insertRandomNumbers(testContainer, stableContainer, 5); //1000000
   btree<long> btcpy = testContainer;
+  
+  std::cout << testContainer << std::endl;
   confirmEverythingMatches(btcpy, stableContainer);
-
+  
 /***
   
   // this next portion was something I used to sort a bunch of chars
