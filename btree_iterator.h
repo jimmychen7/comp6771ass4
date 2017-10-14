@@ -34,9 +34,10 @@ public:
     bool operator!=(const btree_iterator& other) const;
     bool operator!=(const const_btree_iterator<T>& other) const;
     
+    btree_iterator(std::shared_ptr<typename btree<T>::Node::Element> pointee);
     btree_iterator(typename btree<T>::Node::Element *pointee = nullptr);
 private:
-    typename btree<T>::Node::Element *pointee_;
+    std::shared_ptr<typename btree<T>::Node::Element> pointee_;
 };
 
 // const_btree_iterator interface
@@ -55,21 +56,27 @@ public:
     bool operator!=(const const_btree_iterator& other) const;
     bool operator!=(const btree_iterator<T>& other) const;
     
+    const_btree_iterator(std::shared_ptr<typename btree<T>::Node::Element> pointee);
     const_btree_iterator(typename btree<T>::Node::Element *pointee = nullptr);
+    const_btree_iterator(const btree_iterator<T>& it);
 private:
-    typename btree<T>::Node::Element *pointee_;
+    std::shared_ptr<typename btree<T>::Node::Element> pointee_;
 };
 
 // btree_iterator
 template <typename T>
-btree_iterator<T>::btree_iterator(typename btree<T>::Node::Element *pointee)
+btree_iterator<T>::btree_iterator(std::shared_ptr<typename btree<T>::Node::Element> pointee)
     : pointee_{pointee} {
 }
 
+template <typename T>
+btree_iterator<T>::btree_iterator(typename btree<T>::Node::Element *pointee)
+    : pointee_{std::make_shared<typename btree<T>::Node::Element>(*pointee)} {
+}
 
 template <typename T> typename btree_iterator<T>::reference 
 btree_iterator<T>::operator*() const {
-    return pointee_->value_;
+    return pointee_.get()->getValue();
 }
 
 template <typename T>
@@ -77,21 +84,44 @@ T* btree_iterator<T>::operator->() const {
     return &(operator*());
 }
 
+//TODO
 template <typename T> btree_iterator<T>& 
 btree_iterator<T>::operator++() {
-    assert(pointee_ != nullptr);
-    pointee_ = pointee_->next_;
+    assert(pointee_.get() != nullptr);
+    pointee_ = pointee_.get()->next_;
     return *this;
 }
 
 template <typename T>
 bool btree_iterator<T>::operator==(const btree_iterator& other) const {
-    return this->pointee_ == other.pointee_;
+    typename btree<T>::Node::Element *a = this->pointee_.get();
+    typename btree<T>::Node::Element *b = other.pointee_.get();
+    
+    if(a == b) {
+        return true;
+    }
+    
+    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+        return true;
+    }
+    
+    return false;
 }
 
 template <typename T>
 bool btree_iterator<T>::operator==(const const_btree_iterator<T>& other) const {
-    return this->pointee_ == other.pointee_;
+    typename btree<T>::Node::Element *a = this->pointee_.get();
+    typename btree<T>::Node::Element *b = other.pointee_.get();
+    
+    if(a == b) {
+        return true;
+    }
+    
+    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+        return true;
+    }
+    
+    return false;
 }
 
 template <typename T>
@@ -106,18 +136,50 @@ bool btree_iterator<T>::operator!=(const const_btree_iterator<T>& other) const {
 
 //const_btree_iterator
 template <typename T>
-const_btree_iterator<T>::const_btree_iterator(typename btree<T>::Node::Element *pointee)
+const_btree_iterator<T>::const_btree_iterator(std::shared_ptr<typename btree<T>::Node::Element> pointee)
     : pointee_{pointee} {
 }
 
 template <typename T>
+const_btree_iterator<T>::const_btree_iterator(typename btree<T>::Node::Element *pointee)
+    : pointee_{std::make_shared<typename btree<T>::Node::Element>(*pointee)} {
+}
+
+template <typename T>
+const_btree_iterator<T>::const_btree_iterator(const btree_iterator<T>& it)
+    : pointee_{it.pointee_}{
+}
+
+template <typename T>
 bool const_btree_iterator<T>::operator==(const const_btree_iterator& other) const {
-    return this->pointee_ == other.pointee_;
+    typename btree<T>::Node::Element *a = this->pointee_.get();
+    typename btree<T>::Node::Element *b = other.pointee_.get();
+    
+    if(a == b) {
+        return true;
+    }
+    
+    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+        return true;
+    }
+    
+    return false;
 }
 
 template <typename T>
 bool const_btree_iterator<T>::operator==(const btree_iterator<T>& other) const {
-    return this->pointee_ == other.pointee_;
+    typename btree<T>::Node::Element *a = this->pointee_.get();
+    typename btree<T>::Node::Element *b = other.pointee_.get();
+    
+    if(a == b) {
+        return true;
+    }
+    
+    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+        return true;
+    }
+    
+    return false;
 }
 
 template <typename T>

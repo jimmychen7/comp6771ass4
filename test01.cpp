@@ -122,10 +122,17 @@ int main(void) {
   // insert lots of random numbers and compare with a known correct container
   btree<long> testContainer(99);
   set<long> stableContainer;
-  insertRandomNumbers(testContainer, stableContainer, 5); //1000000
+  insertRandomNumbers(testContainer, stableContainer, 4); //1000000
   btree<long> btcpy = testContainer;
   
   std::cout << testContainer << std::endl;
+  std::cout << btcpy << std::endl;
+  
+  for(auto elt = stableContainer.begin(); elt != stableContainer.end(); ++elt) {
+    std::cout << *elt << " ";
+  }
+  std::cout << std::endl;
+  
   confirmEverythingMatches(btcpy, stableContainer);
   
 /***

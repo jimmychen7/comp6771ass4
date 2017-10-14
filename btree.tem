@@ -99,13 +99,51 @@ btree<T>::btree(size_t maxNodeElems)
 }
 
 template <typename T>
-btree<T>::btree(const btree<T>& original) {
-    //TODO
+btree<T>::btree(const btree<T>& original)
+    : btree(original.maxNodeElems_) {
+    
+    typedef typename btree<T>::Node Node;
+    auto nodesToCopy = std::queue<std::shared_ptr<Node>>();
+    nodesToCopy.push(original.root_);
+    
+    while(!nodesToCopy.empty()) {
+        Node *node = nodesToCopy.front().get();
+        nodesToCopy.pop();
+        
+        auto elements = node->getElements();
+        
+        for (unsigned int i = 0; i < elements.size(); i++) {
+            auto currElement = elements.at(i);
+            insert(currElement->getValue());
+        }
+        
+        if(sizeof(node->getElements()) == original.maxNodeElems_) {
+            auto firstElement = elements.at(0);
+            std::shared_ptr<Node> leftChildPtr = firstElement->getLeftChild();
+            std::shared_ptr<Node> rightChildPtr = firstElement->getRightChild();
+            if(leftChildPtr.get()->isEmpty()) {
+                nodesToCopy.push(leftChildPtr);
+            }
+            if(rightChildPtr.get()->isEmpty()) {
+                nodesToCopy.push(rightChildPtr);
+            }
+            for (unsigned int i = 1; i < elements.size(); i++) {
+                auto currElement = elements.at(i);
+                rightChildPtr = currElement->getRightChild();
+                if(!rightChildPtr.get()->isEmpty()) {
+                    nodesToCopy.push(rightChildPtr);
+                }
+            }
+        }
+    }
 }
 
 template <typename T>
 btree_iterator<T> btree<T>::find(const T& elem) {
     //TODO
+    
+    std::cout << "find_non_const" << std::endl;
+    
     typedef typename btree<T>::Node::Element Element;
     
     auto nodesToSearch = std::queue<std::shared_ptr<Node>>();
@@ -121,7 +159,7 @@ btree_iterator<T> btree<T>::find(const T& elem) {
             
             if(currElem->getValue() == elem) {
                 return btree_iterator<T>(currElem);
-            } else if(currElem->getValue() > elem) {
+            } else if(elem < currElem->getValue()) {
                 std::shared_ptr<Node> nodeToSearch = currElem->getLeftChild();
                 if(!nodeToSearch.get()->isEmpty()) {
                     nodesToSearch.push(nodeToSearch);
@@ -142,23 +180,23 @@ btree_iterator<T> btree<T>::find(const T& elem) {
 
 template <typename T>
 const_btree_iterator<T> btree<T>::find(const T& elem) const {
-    //TODO
+    //TODO    
     typedef typename btree<T>::Node::Element Element;
     
     auto nodesToSearch = std::queue<std::shared_ptr<Node>>();
     nodesToSearch.push(root_);
     
     while(!nodesToSearch.empty()) {
+    
         Node *node = nodesToSearch.front().get();
         nodesToSearch.pop();
-        std::vector<std::shared_ptr<Element>> elems = node->getElements();
-        
-        for(unsigned int i = 0; i < elems.size(); ++i) {
+        auto elems = node->getElements();
+        for (unsigned int i = 0; i < elems.size(); i++) {
             Element *currElem = elems.at(i).get();
             
             if(currElem->getValue() == elem) {
                 return const_btree_iterator<T>(currElem);
-            } else if(currElem->getValue() > elem) {
+            } else if(elem < currElem->getValue()) {
                 std::shared_ptr<Node> nodeToSearch = currElem->getLeftChild();
                 if(!nodeToSearch.get()->isEmpty()) {
                     nodesToSearch.push(nodeToSearch);
@@ -173,6 +211,7 @@ const_btree_iterator<T> btree<T>::find(const T& elem) const {
             }
         }
     }
+    //std::cout << "returning cend()" << std::endl;
     return cend();
 }
 
@@ -199,11 +238,12 @@ std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
         for(unsigned int i = 0; i < elems.size(); ++i) {
             Element *currElem = elems.at(i).get();
             if(currElem->getValue() == elem) {
-                return std::pair<btree_iterator<T>, bool>(btree_iterator<T>(currElem), false);
-            } else if(currElem->getValue() > elem) {
+                return std::pair<btree_iterator<T>, bool>
+                                        (btree_iterator<T>(currElem), false);
+            } else if(elem < currElem->getValue()) {
                 if(sizeof(node->getElements()) == maxNodeElems_) {
                     std::shared_ptr<Node> nodeToSearch = currElem->getLeftChild();
-                    if(nodeToSearch.get()->isEmpty()) {
+                    if(!nodeToSearch.get()->isEmpty()) {
                         nodesToSearch.push(nodeToSearch);
                     }
                 } else {
@@ -234,7 +274,7 @@ std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
     }
     
     return std::pair<btree_iterator<T>, bool>(
-                                    btree_iterator<T>(newElem.get()) ,true);
+                                    btree_iterator<T>(newElem) ,true);
 }
 
 template <typename T>
@@ -253,8 +293,6 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
         
         auto elements = node->getElements();
         
-        
-        
         for (unsigned int i = 0; i < elements.size(); i++) {
             auto currElement = elements.at(i);
             if (i == 0 && nodesToPrint.empty()) {
@@ -269,10 +307,10 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
             auto firstElement = elements.at(0);
             std::shared_ptr<Node> leftChildPtr = firstElement->getLeftChild();
             std::shared_ptr<Node> rightChildPtr = firstElement->getRightChild();
-            if(leftChildPtr.get()->isEmpty()) {
+            if(!leftChildPtr.get()->isEmpty()) {
                 nodesToPrint.push(leftChildPtr);
             }
-            if(rightChildPtr.get()->isEmpty()) {
+            if(!rightChildPtr.get()->isEmpty()) {
                 nodesToPrint.push(rightChildPtr);
             }
             for (unsigned int i = 1; i < elements.size(); i++) {

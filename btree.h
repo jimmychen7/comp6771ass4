@@ -126,15 +126,17 @@ public:
   }
    
   iterator end() const {
-    auto end = std::make_shared<typename btree<T>::Node::Element>();
-    end.get()->setParent(lastNode_);
-    return iterator(end.get());
+    typename btree<T>::Node::Element elt;
+    elt.setParent(lastNode_);
+    auto end = std::make_shared<typename btree<T>::Node::Element>(elt);
+    return iterator(end);
   }
   
   const_iterator cend() const {
-    auto end = std::make_shared<typename btree<T>::Node::Element>();
-    end.get()->setParent(lastNode_);
-    return const_iterator(end.get());
+    typename btree<T>::Node::Element elt;
+    elt.setParent(lastNode_);
+    auto end = std::make_shared<typename btree<T>::Node::Element>(elt);
+    return const_iterator(end);
   }
   
   /**
