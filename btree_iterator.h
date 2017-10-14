@@ -101,7 +101,7 @@ bool btree_iterator<T>::operator==(const btree_iterator& other) const {
         return true;
     }
     
-    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+    if(a->getValue() == b->getValue()) {
         return true;
     }
     
@@ -117,7 +117,7 @@ bool btree_iterator<T>::operator==(const const_btree_iterator<T>& other) const {
         return true;
     }
     
-    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+    if(a->getValue() == b->getValue()) {
         return true;
     }
     
@@ -159,7 +159,7 @@ bool const_btree_iterator<T>::operator==(const const_btree_iterator& other) cons
         return true;
     }
     
-    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+    if(a->getValue() == b->getValue()) {
         return true;
     }
     
@@ -175,7 +175,7 @@ bool const_btree_iterator<T>::operator==(const btree_iterator<T>& other) const {
         return true;
     }
     
-    if(a->getValue() == b->getValue() && a->getParent() == b->getParent()) {
+    if(a->getValue() == b->getValue()) {
         return true;
     }
     

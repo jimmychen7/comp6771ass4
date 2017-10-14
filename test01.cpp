@@ -28,7 +28,6 @@ using std::ifstream;
 using std::ofstream;
 using std::set;
 using std::string;
-using std::pair;
 
 namespace {
 
@@ -69,14 +68,14 @@ long getRandom(long low, long high) {
  * class instance so we can later track the correctness of our btree.
  **/
 void insertRandomNumbers(btree<long>& testContainer, set<long>& stableContainer, size_t size) {
-  cout << "Let's insert up to " << size << " numbers." << endl;
+  cout << "Let's insert up to " << size << " numbers." << endl;  
   for (size_t i = 0; i < size; i++) {
     long rndNum = getRandom(kMinInteger, kMaxInteger);
-    pair<btree<long>::iterator, bool> result = testContainer.insert(rndNum);
+    std::pair<btree<long>::iterator, bool> result = testContainer.insert(rndNum);
     if (result.second) stableContainer.insert(rndNum);
     if ((i + 1) % 100000 == 0) 
       cout << "Inserted some " << (i + 1) << " numbers thus far." << endl;
-  }
+    }
   cout << endl;
 }
 
@@ -94,6 +93,9 @@ bool confirmEverythingMatches(const btree<long>& testContainer, const set<long>&
   cout << "Confirms the btree and the set " 
           "contain exactly the same values..." << endl;
   for (long i = kMinInteger; i <= kMaxInteger; i++) {
+    if(i % kMinInteger == 0) {
+        cout << "up to: " << i << endl;
+    }
     bool foundInTree = (testContainer.find(i) != testContainer.end());
     bool foundInSet = (stableContainer.find(i) != stableContainer.end());
     if (foundInTree != foundInSet) {
@@ -103,10 +105,8 @@ bool confirmEverythingMatches(const btree<long>& testContainer, const set<long>&
     }
   }
   cout << "- btree checks out just fine." << endl;
-
   return true;
 }
-
 }  // namespace close
 
 
@@ -115,26 +115,23 @@ bool confirmEverythingMatches(const btree<long>& testContainer, const set<long>&
  * you should uncomment it as appropriate.
  **/
 int main(void) {
-
   // initialise random number generator with 'random' seed
   initRandom();
 
   // insert lots of random numbers and compare with a known correct container
   btree<long> testContainer(99);
   set<long> stableContainer;
-  insertRandomNumbers(testContainer, stableContainer, 4); //1000000
+    
+  insertRandomNumbers(testContainer, stableContainer, 1000000); //1000000
+    
+  //std::cout << testContainer << std::endl;
+    
   btree<long> btcpy = testContainer;
   
-  std::cout << testContainer << std::endl;
-  std::cout << btcpy << std::endl;
-  
-  for(auto elt = stableContainer.begin(); elt != stableContainer.end(); ++elt) {
-    std::cout << *elt << " ";
-  }
-  std::cout << std::endl;
+  //std::cout << btcpy << std::endl;
   
   confirmEverythingMatches(btcpy, stableContainer);
-  
+
 /***
   
   // this next portion was something I used to sort a bunch of chars

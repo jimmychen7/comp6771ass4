@@ -126,16 +126,14 @@ public:
   }
    
   iterator end() const {
-    typename btree<T>::Node::Element elt;
-    elt.setParent(lastNode_);
-    auto end = std::make_shared<typename btree<T>::Node::Element>(elt);
+    typedef typename btree<T>::Node::Element Element;
+    auto end = std::make_shared<Element>(Element());
     return iterator(end);
   }
   
   const_iterator cend() const {
-    typename btree<T>::Node::Element elt;
-    elt.setParent(lastNode_);
-    auto end = std::make_shared<typename btree<T>::Node::Element>(elt);
+    typedef typename btree<T>::Node::Element Element;
+    auto end = std::make_shared<Element>(Element());
     return const_iterator(end);
   }
   
@@ -212,10 +210,10 @@ private:
             Element();
             Element(T value);
             ~Element();
-            T getValue();
-            std::shared_ptr<Node> getLeftChild();
-            std::shared_ptr<Node> getRightChild();
-            std::shared_ptr<Node> getParent();
+            T getValue() const;
+            std::shared_ptr<Node> getLeftChild() const;
+            std::shared_ptr<Node> getRightChild() const;
+            std::shared_ptr<Node> getParent() const;
             void setValue(T value);
             void setLeftChild(std::shared_ptr<Node> sharedPtr);
             void setRightChild(std::shared_ptr<Node> sharedPtr);
