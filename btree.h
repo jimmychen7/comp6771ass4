@@ -117,24 +117,15 @@ public:
    * -- crend() 
    */
   iterator begin() const {
-    if(root_.get()->isEmpty()) {
-      return end();
-    }
-    std::shared_ptr<typename btree<T>::Node::Element>
-                                        head = root_.get()->getElments().at(0);
-    return iterator(head);
+    return iterator(*this, "begin");
   }
    
   iterator end() const {
-    typedef typename btree<T>::Node::Element Element;
-    auto end = std::make_shared<Element>(Element());
-    return iterator(end);
+    return iterator(*this, "end");
   }
   
   const_iterator cend() const {
-    typedef typename btree<T>::Node::Element Element;
-    auto end = std::make_shared<Element>(Element());
-    return const_iterator(end);
+    return const_iterator(*this, "end");
   }
   
   /**
@@ -206,6 +197,8 @@ private:
     class Node;
     class Node {
         class Element {
+            friend class btree_iterator<T>;
+            friend class const_btree_iterator<T>;
         public:
             Element();
             Element(T value);
@@ -222,7 +215,6 @@ private:
             T value_;
             std::shared_ptr<Node> leftChild_;
             std::shared_ptr<Node> rightChild_;
-            std::shared_ptr<Node> parent_;
             
         };
         // TODO can i get rid of the friend btree?
@@ -244,7 +236,6 @@ private:
     void copyTree(Node& copy, Node& original);
     
     std::shared_ptr<Node> root_;
-    std::shared_ptr<Node> lastNode_;
     size_t maxNodeElems_;
 };
 

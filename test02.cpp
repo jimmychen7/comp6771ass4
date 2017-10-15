@@ -16,10 +16,11 @@ int main(void) {
   b.insert(10);
   b.insert(3);
   b.insert(4);
-
-  for(btree<int>::iterator iter = b.begin(); iter != b.end(); ++iter)
+  
+  for(btree<int>::iterator iter = b.begin(); iter != b.end(); ++iter) {
     std::cout << *iter << std::endl;
-
+  }
+  
   foo(b);
   
   return 0;
