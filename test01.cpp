@@ -32,7 +32,7 @@ using std::string;
 namespace {
 
 const long kMinInteger = 1000000;
-const long kMaxInteger = 100000000;
+const long kMaxInteger = 1500000;
 
 void initRandom(unsigned long);
 long getRandom(long low, long high);
@@ -121,7 +121,7 @@ int main(void) {
   btree<long> testContainer(99);
   set<long> stableContainer;
     
-  insertRandomNumbers(testContainer, stableContainer, 1000000);
+  insertRandomNumbers(testContainer, stableContainer, 100);
   btree<long> btcpy = testContainer;
   confirmEverythingMatches(btcpy, stableContainer);
 

@@ -6,14 +6,14 @@
 CXX = g++-4.9
 
 ## compiler flags
-CXXFLAGS = -Wall -Werror -O2 -std=c++14 -fsanitize=address
+CXXFLAGS = -pg -Wall -Werror -O2 -std=c++14
 ## enable this for debugging
 #CXXFLAGS = -Wall -g
 
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(subst .cpp,,$(SOURCES))
 
-default: test03
+default: test04
 
 ## using this target will automagically compile all the *.cpp
 ## files (hopefully tests) found in the current directory into

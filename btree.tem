@@ -68,6 +68,11 @@ bool btree<T>::Node::isEmpty() {
 }
 
 template <typename T>
+std::vector<typename btree<T>::Node::Element> btree<T>::Node::getElements() const {
+    return elems_;
+}
+
+template <typename T>
 typename btree<T>::Node::Element* btree<T>::Node::addElement(const T& elem) {
     typedef typename btree<T>::Node::Element Element;
     auto newElems = elems_;
@@ -345,15 +350,15 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
         Node *node = nodesToPrint.front().get();
         nodesToPrint.pop();
         
-        auto elements = node.elems_();
+        auto elements = node->getElements();
         
         for (unsigned int i = 0; i < elements.size(); ++i) {
             auto currElement = elements.at(i);
             if (i == 0 && node == tree.root_.get()) {
                 // first element of root node
-                os << currElement->getValue();
+                os << currElement.getValue();
             } else {
-                os << " " << currElement->getValue();
+                os << " " << currElement.getValue();
             }
         }
         

@@ -124,6 +124,18 @@ public:
     return iterator(*this, "end");
   }
   
+  iterator rbegin() const {
+    return iterator(*this, "end");
+  }
+   
+  iterator rend() const {
+    return iterator(*this, "begin");
+  }
+  
+  const_iterator cbegin() const {
+    return const_iterator(*this, "begin");
+  }
+  
   const_iterator cend() const {
     return const_iterator(*this, "end");
   }
@@ -217,7 +229,6 @@ private:
             std::shared_ptr<Node> rightChild_;
             
         };
-        // TODO can i get rid of the friend btree?
         friend class btree;
         friend class btree_iterator<T>;
         friend class const_btree_iterator<T>;
@@ -227,6 +238,7 @@ private:
         ~Node();
         bool isEmpty();
         typename btree<T>::Node::Element* addElement(const T& elem);
+        std::vector<Element> getElements() const;
         
     private:
         std::vector<Element> elems_;

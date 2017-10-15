@@ -33,6 +33,8 @@ public:
     pointer operator->() const;
     btree_iterator& operator++();
     btree_iterator operator++(int);
+    btree_iterator& operator--();
+    btree_iterator operator--(int);
     bool operator==(const btree_iterator& other) const;
     bool operator==(const const_btree_iterator<T>& other) const;
     bool operator!=(const btree_iterator& other) const;
@@ -60,13 +62,16 @@ public:
     
     typedef typename btree<T>::Node Node;
     typedef typename btree<T>::Node::Element Element;
-          
+    
+    
+    const_btree_iterator& operator++();
+    const_btree_iterator operator++(int);
+    const_btree_iterator& operator--();
+    const_btree_iterator operator--(int);
     bool operator==(const const_btree_iterator& other) const;
     bool operator==(const btree_iterator<T>& other) const;
     bool operator!=(const const_btree_iterator& other) const;
     bool operator!=(const btree_iterator<T>& other) const;
-    
-
     const_btree_iterator(const btree<T>& tree, Element *pointee);
     const_btree_iterator(const btree<T>& tree, std::string pos);
 private:
@@ -165,7 +170,6 @@ T* btree_iterator<T>::operator->() const {
 //TODO
 template <typename T> btree_iterator<T>& 
 btree_iterator<T>::operator++() {
-    // assert(pointee_.get() != nullptr);
     if(index_ == elems_.size()) {
         return *this;
     } 
@@ -180,27 +184,39 @@ btree_iterator<T>::operator++(int dummy) {
     return result;
 }
 
+template <typename T> btree_iterator<T>& 
+btree_iterator<T>::operator--() {
+    if(index_ == 0) {
+        return *this;
+    } 
+    index_--;
+    return *this;
+}
+
+template <typename T> btree_iterator<T>
+btree_iterator<T>::operator--(int dummy) {
+    btree_iterator<T> result(*this);
+    --(*this);
+    return result;
+}
+
 template <typename T>
 bool btree_iterator<T>::operator==(const btree_iterator& other) const {
-    if(index_ == other.index_) {
+    if (index_ == other.index_) return true;
+    
+    if(index_ >= elems_.size() && other.index_ >= other.elems_.size())
         return true;
-    }
     
     return false;
 }
 
 template <typename T>
 bool btree_iterator<T>::operator==(const const_btree_iterator<T>& other) const {
-    typename btree<T>::Node::Element *a = elems_.at(index_).get();
-    typename btree<T>::Node::Element *b = other.elems_.at(other.index_).get();
+
+    if (index_ == other.index_) return true;
     
-    if(a == b) {
+    if(index_ >= elems_.size() && other.index_ >= other.elems_.size())
         return true;
-    }
-    
-    if(a->getValue() == b->getValue()) {
-        return true;
-    }
     
     return false;
 }
@@ -223,7 +239,7 @@ const_btree_iterator<T>::const_btree_iterator(const btree<T>& tree
     , index_{} {
     elems_ = toVector(tree);
     for(unsigned int i = 0; i < elems_.size(); ++i) {
-        if(elems_.at(0).getValue() == elem->getValue()) {
+        if(elems_.at(0)->getValue() == elem->getValue()) {
             index_ = i;
         }        
     }
@@ -291,34 +307,55 @@ const_btree_iterator<T>::toVector(const btree<T>& tree) {
     return vector;
 }
 
+template <typename T> const_btree_iterator<T>& 
+const_btree_iterator<T>::operator++() {
+    if(index_ == elems_.size()) {
+        return *this;
+    } 
+    index_++;
+    return *this;
+}
+
+template <typename T> const_btree_iterator<T>
+const_btree_iterator<T>::operator++(int dummy) {
+    btree_iterator<T> result(*this);
+    ++(*this);
+    return result;
+}
+
+template <typename T> const_btree_iterator<T>& 
+const_btree_iterator<T>::operator--() {
+    if(index_ == 0) {
+        return *this;
+    } 
+    index_--;
+    return *this;
+}
+
+template <typename T> const_btree_iterator<T>
+const_btree_iterator<T>::operator--(int dummy) {
+    btree_iterator<T> result(*this);
+    --(*this);
+    return result;
+}
+    
+
 template <typename T>
 bool const_btree_iterator<T>::operator==(const const_btree_iterator& other) const {
-    typename btree<T>::Node::Element *a = this->pointee_.get();
-    typename btree<T>::Node::Element *b = other.pointee_.get();
+    if (index_ == other.index_) return true;
     
-    if(a == b) {
+    if(index_ >= elems_.size() && other.index_ >= other.elems_.size())
         return true;
-    }
-    
-    if(a->getValue() == b->getValue()) {
-        return true;
-    }
     
     return false;
 }
 
 template <typename T>
 bool const_btree_iterator<T>::operator==(const btree_iterator<T>& other) const {
-    typename btree<T>::Node::Element *a = this->pointee_.get();
-    typename btree<T>::Node::Element *b = other.pointee_.get();
+    if (index_ == other.index_) return true;
     
-    if(a == b) {
+    if(index_ >= elems_.size() && other.index_ >= other.elems_.size())
         return true;
-    }
-    
-    if(a->getValue() == b->getValue()) {
-        return true;
-    }
     
     return false;
 }
