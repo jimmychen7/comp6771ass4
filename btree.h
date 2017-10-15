@@ -234,13 +234,15 @@ private:
         Node(std::nullptr_t);
         ~Node();
         bool isEmpty();
-        std::vector<std::shared_ptr<Element>> getElements();
-        std::shared_ptr<Element> addElement(const T& elem);
+        typename btree<T>::Node::Element* addElement(const T& elem);
         
     private:
-        std::vector<std::shared_ptr<Element>> elems_;
+        std::vector<Element> elems_;
         
     };
+    
+    void copyTree(Node& copy, Node& original);
+    
     std::shared_ptr<Node> root_;
     std::shared_ptr<Node> lastNode_;
     size_t maxNodeElems_;

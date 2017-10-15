@@ -63,12 +63,12 @@ void btree<T>::Node::Element::setParent(std::shared_ptr<Node> sharedPtr) {
 // Node
 template <typename T>
 btree<T>::Node::Node()
-    : elems_{std::vector<std::shared_ptr<Element>>()} {
+    : elems_{std::vector<Element>()} {
 }
 
 template <typename T>
 btree<T>::Node::Node(std::nullptr_t) 
-    : elems_{std::vector<std::shared_ptr<Element>>()} {
+    : elems_{std::vector<Element>()} {
 }
 
 template <typename T>
@@ -81,45 +81,40 @@ bool btree<T>::Node::isEmpty() {
 }
 
 template <typename T>
-std::vector<std::shared_ptr<typename btree<T>::Node::Element>>
-btree<T>::Node::getElements() {
-    return elems_;
-}
-
-template <typename T>
-std::shared_ptr<typename btree<T>::Node::Element> btree<T>::Node::addElement(const T& elem) {
+typename btree<T>::Node::Element* btree<T>::Node::addElement(const T& elem) {
     typedef typename btree<T>::Node::Element Element;
     auto newElems = elems_;
-    auto newElem = std::make_shared<Element>(Element(elem));
-    newElems.push_back(newElem);
+    newElems.push_back(Element(elem));
+    int index = 0;
     std::sort( newElems.begin( ), newElems.end( )
-        , [ ]( const std::shared_ptr<Element>& lhs
-                , const std::shared_ptr<Element>& rhs ) {
-                    return lhs.get()->getValue() < rhs.get()->getValue();
+        , [ ]( const Element& lhs
+                , const Element& rhs ) {
+                    return lhs.getValue() < rhs.getValue();
                 });
     
     if(newElems.size() > 1) {
         for(unsigned int i = 0; i < elems_.size(); ++i) {
-            if(newElems.at(i)->getValue() == elem) {
-                Element *e = newElems.at(i).get();
+            if(newElems.at(i).getValue() == elem) {
+                index = i;
+                Element e = newElems.at(i);
                 if(i == 0) {
-                    Element *next = newElems.at(i+1).get(); 
-                    e->setRightChild(next->getLeftChild());
+                    Element next = newElems.at(i+1); 
+                    e.setRightChild(next.getLeftChild());
                 } else if (i == elems_.size() -1 ) {
-                    Element *prev = newElems.at(i-1).get();
-                    e->setLeftChild(prev->getRightChild());
+                    Element prev = newElems.at(i-1);
+                    e.setLeftChild(prev.getRightChild());
                 } else {
-                    Element *prev = newElems.at(i-1).get();
-                    Element *next = newElems.at(i+1).get();
-                    e->setRightChild(next->getLeftChild());
-                    e->setLeftChild(prev->getRightChild());
+                    Element prev = newElems.at(i-1);
+                    Element next = newElems.at(i+1);
+                    e.setRightChild(next.getLeftChild());
+                    e.setLeftChild(prev.getRightChild());
                 }
             }
         }
     }
     
     elems_ = newElems;
-    return newElem;
+    return &elems_.at(index);
 }
 
 // btree
@@ -133,41 +128,8 @@ btree<T>::btree(size_t maxNodeElems)
 template <typename T>
 btree<T>::btree(const btree<T>& original)
     : btree(original.maxNodeElems_) {
-    typedef typename btree<T>::Node Node;
-    auto nodesToPrint = std::queue<std::shared_ptr<Node>>();
     
-    nodesToPrint.push(original.root_);
-    while(!nodesToPrint.empty()) {
-        Node *node = nodesToPrint.front().get();
-        nodesToPrint.pop();
-        
-        auto elements = node->getElements();
-        
-        for (unsigned int i = 0; i < elements.size(); ++i) {
-            auto currElement = elements.at(i);
-            insert(currElement->getValue());
-        }
-        
-        if(node->getElements().size() == original.maxNodeElems_) {
-            auto firstElement = elements.at(0);
-            std::shared_ptr<Node> leftChildPtr = firstElement->getLeftChild();
-            std::shared_ptr<Node> rightChildPtr = firstElement->getRightChild();
-            if(!leftChildPtr.get()->isEmpty()) {
-                nodesToPrint.push(leftChildPtr);
-            }
-            if(!rightChildPtr.get()->isEmpty()) {
-                nodesToPrint.push(rightChildPtr);
-            }
-            for (unsigned int i = 1; i < elements.size(); i++) {
-                auto currElement = elements.at(i);
-                rightChildPtr = currElement->getRightChild();
-                if(!rightChildPtr.get()->isEmpty()) {
-                    nodesToPrint.push(rightChildPtr);
-                }
-            }
-        }
-    }
-    
+    copyTree(*this->root_.get(), *original.root_.get());
     lastNode_ = original.lastNode_;
 }
 
@@ -185,7 +147,7 @@ btree_iterator<T> btree<T>::find(const T& elem) {
     while(!nodesToSearch.empty()) {
         Node *node = nodesToSearch.front().get();
         nodesToSearch.pop();
-        std::vector<std::shared_ptr<Element>> elems = node->getElements();
+        std::vector<std::shared_ptr<Element>> elems = node->elems_;
         
         for(unsigned int i = 0; i < elems.size(); ++i) {
             Element *currElem = elems.at(i).get();
@@ -223,23 +185,64 @@ const_btree_iterator<T> btree<T>::find(const T& elem) const {
     
         Node *node = nodesToSearch.front().get();
         nodesToSearch.pop();
-        auto elems = node->getElements();
-        for (unsigned int i = 0; i < elems.size(); i++) {
-            Element *currElem = elems.at(i).get();
+        auto& elems = node->elems_;
+        
+        if(elems.size() > 2) {
+        
+            Element &currElem = elems.at(0);
             
-            if(currElem->getValue() == elem) {
-                return const_btree_iterator<T>(currElem);
-            } else if(elem < currElem->getValue()) {
-                std::shared_ptr<Node> nodeToSearch = currElem->getLeftChild();
+            if(currElem.getValue() == elem) {
+                return const_btree_iterator<T>(&currElem);
+            } else if(elem < currElem.getValue()) {
+                std::shared_ptr<Node> nodeToSearch = currElem.getLeftChild();
                 if(!nodeToSearch.get()->isEmpty()) {
                     nodesToSearch.push(nodeToSearch);
                 }
-                break;
-            } else if(i == elems.size() - 1) {
-                //last elem in the node
-                std::shared_ptr<Node> nodeToSearch = currElem->getRightChild();
+                continue;
+            }
+            
+            currElem = elems.at(elems.size() - 1);
+            
+            if(currElem.getValue() == elem) {
+                return const_btree_iterator<T>(&currElem);
+            } else if(currElem.getValue() < elem) {
+                std::shared_ptr<Node> nodeToSearch = currElem.getRightChild();
                 if(!nodeToSearch.get()->isEmpty()) {
                     nodesToSearch.push(nodeToSearch);
+                }
+                continue;
+            }
+            
+            for (unsigned int i = 1; i < elems.size(); ++i) {
+                currElem = elems.at(i);
+                if(currElem.getValue() == elem) {
+                    return const_btree_iterator<T>(&elems.at(i));
+                } else if(elem < currElem.getValue()) {
+                    std::shared_ptr<Node> nodeToSearch = currElem.getLeftChild();
+                    if(!nodeToSearch.get()->isEmpty()) {
+                        nodesToSearch.push(nodeToSearch);
+                    }
+                    break;
+                }
+            }
+            
+        } else {
+            for (unsigned int i = 0; i < elems.size(); i++) {
+                Element &currElem = elems.at(i);
+                if(currElem.getValue() == elem) {
+                    return const_btree_iterator<T>(&currElem);
+                } else if(elem < currElem.getValue()) {
+                    std::shared_ptr<Node> nodeToSearch = currElem.getLeftChild();
+                    if(!nodeToSearch.get()->isEmpty()) {
+                        nodesToSearch.push(nodeToSearch);
+                    }
+                    break;
+                } else if(i == elems.size() - 1) {
+                    //last elem in the node
+                    std::shared_ptr<Node> nodeToSearch = currElem.getRightChild();
+                    if(!nodeToSearch.get()->isEmpty()) {
+                        nodesToSearch.push(nodeToSearch);
+                    }
                 }
             }
         }
@@ -254,7 +257,9 @@ std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
     auto nodesToSearch = std::queue<std::shared_ptr<Node>>();
     nodesToSearch.push(root_);
     bool done = false;
-    auto newElem = std::shared_ptr<Element>();
+    
+    Element* newElem = nullptr;
+    
     //std::cout << "\ninsert: " << elem << std::endl;
     if(root_.get()->isEmpty()) {
         // root node is empty
@@ -269,7 +274,7 @@ std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
         
         //std::cout << "sizes: " << node->getElements().size() << " " << maxNodeElems_ << std::endl;
         
-        if(node->getElements().size() < maxNodeElems_ 
+        if(node->elems_.size() < maxNodeElems_ 
             || node->isEmpty()) {
             // node is not full || node is empty
             //std::cout << "inserted into unfull node" << std::endl;
@@ -278,24 +283,24 @@ std::pair<btree_iterator<T>, bool> btree<T>::insert(const T& elem) {
             break;
         }
         
-        auto elems = node->getElements();
+        auto elems = node->elems_;
     
         for(unsigned int i = 0; i < elems.size(); ++i) {
-            Element *currElem = elems.at(i).get();
+            Element currElem = elems.at(i);
             //std::cout << i << ": " << currElem->getValue() << std::endl;
-            if(currElem->getValue() == elem) {
+            if(currElem.getValue() == elem) {
                 //std::cout << i << "value exists" << std::endl;
                 return std::pair<btree_iterator<T>, bool>
-                                        (btree_iterator<T>(currElem), false);
-            } else if(elem < currElem->getValue()) {
+                                        (btree_iterator<T>(&elems.at(i)), false);
+            } else if(elem < currElem.getValue()) {
                 //std::cout << "go to left node" << std::endl;
-                std::shared_ptr<Node> nodeToSearch = currElem->getLeftChild();
+                std::shared_ptr<Node> nodeToSearch = currElem.getLeftChild();
                 nodesToSearch.push(nodeToSearch);
                 break;
             } else if(i == elems.size() - 1) {
                 //last elem in the node
                 //std::cout << "go to right node" << std::endl;
-                std::shared_ptr<Node> nodeToSearch = currElem->getRightChild();
+                std::shared_ptr<Node> nodeToSearch = currElem.getRightChild();
                 nodesToSearch.push(nodeToSearch);
             }
         }
@@ -323,7 +328,7 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
         Node *node = nodesToPrint.front().get();
         nodesToPrint.pop();
         
-        auto elements = node->getElements();
+        auto elements = node.elems_();
         
         for (unsigned int i = 0; i < elements.size(); ++i) {
             auto currElement = elements.at(i);
@@ -335,7 +340,7 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
             }
         }
         
-        if(node->getElements().size() == tree.maxNodeElems_) {
+        if(elements.size() == tree.maxNodeElems_) {
             auto firstElement = elements.at(0);
             std::shared_ptr<Node> leftChildPtr = firstElement->getLeftChild();
             std::shared_ptr<Node> rightChildPtr = firstElement->getRightChild();
@@ -357,6 +362,21 @@ std::ostream& operator<< (std::ostream& os, const btree<T>& tree) {
     }
     os << std::endl;
     return os;
+}
+
+template <typename T>
+void btree<T>::copyTree(Node& copy, Node& original) {
+    copy.elems_ = original.elems_;
+    
+    if(original.isEmpty()) {
+        return;
+    }
+    for (unsigned int i = 0; i < copy.elems_.size(); ++i) {
+        copyTree(*copy.elems_.at(i).getLeftChild().get()
+                , *original.elems_.at(i).getLeftChild().get());
+        copyTree(*copy.elems_.at(i).getRightChild().get()
+                , *original.elems_.at(i).getRightChild().get());
+    }
 }
     
     /*

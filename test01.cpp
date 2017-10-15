@@ -124,7 +124,7 @@ int main(void) {
     
   insertRandomNumbers(testContainer, stableContainer, 1000000); //1000000
     
-  //std::cout << testContainer << std::endl;
+  // std::cout << testContainer << std::endl;
     
   btree<long> btcpy = testContainer;
   
